@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple OCR</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.0/tesseract.min.js"></script>
+</head>
+
+<body>
+    <center>
+        <h1>Simple OCR</h1>
+
+        <textarea id="image-text"></textarea>
+        <textarea hidden id="image-url"></textarea>
+        <br>
+        <br>
+        <button id="captureButton">Capture Photo</button>
+        <br>
+
+        <table>
+            <tr>
+                <th>
+                    <video id="videoElement" autoplay></video>
+                </th>
+                <th>
+                    <canvas id="canvasElement" style="display: none;"></canvas>
+                    <img id="photoElement" style="display: none;">
+
+                </th>
+            </tr>
+        </table>
+    </center>
+
+
+    <!-- JavaScript code will go here -->
+
+    <script>
+        const videoElement = document.getElementById('videoElement');
+        const canvasElement = document.getElementById('canvasElement');
+        const photoElement = document.getElementById('photoElement');
+        const startButton = document.getElementById('startButton');
+        const captureButton = document.getElementById('captureButton');
+
+        var video = document.querySelector("#videoElement");
+
+        // minta izin user
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia ||
+            navigator.msGetUserMedia || navigator.oGetUserMedia;
+
+        // jika user memberikan izin
+        if (navigator.getUserMedia) {
+            // jalankan fungsi handleVideo, dan videoError jika izin ditolak
+            navigator.getUserMedia({
+                video: true,
+            }, handleVideo, videoError);
+        }
+
+        // fungsi ini akan dieksekusi jika  izin telah diberikan
+        function handleVideo(stream) {
+            videoElement.srcObject = stream;
+            captureButton.disabled = false;
+        }
+
+        // fungsi ini akan dieksekusi kalau user menolak izin
+        function videoError(e) {
+            // do something
+            alert("Izinkan menggunakan webcam!")
+        }
+
+
+        function capturePhoto() {
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+            canvasElement.getContext('2d').drawImage(videoElement, 0, 0);
+            const photoDataUrl = canvasElement.toDataURL('image/jpeg');
+            photoElement.src = photoDataUrl;
+            photoElement.style.display = 'block';
+            $('#image-url').val(photoElement.src);
+
+
+        }
+
+        captureButton.addEventListener('click', capturePhoto);
+    </script>
+
+    <script type="module">
+        const worker = await Tesseract.createWorker("eng", 1, {
+            corePath: 'https://unpkg.com/tesseract.js-core@5.0.0/tesseract-core.wasm.js',
+            workerPath: "https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.0/worker.min.js",
+            // logger: function(m) {
+            //     console.log(m);
+            // }
+        });
+
+        function recognize() {
+            (async () => {
+                const {
+                    data: {
+                        text
+                    }
+                } = await worker.recognize($('#image-url').val());
+                $('#image-text').val(text)
+                // console.log(text);
+                await worker.terminate();
+            })();
+        }
+        captureButton.addEventListener('click', recognize);
+    </script>
+</body>
+
+</html>
