@@ -1,4 +1,4 @@
-# Simple OCR with Webcam
+# Simple OCR with Webcam using Tesseract.js
 
 ![image](https://github.com/galanghanaf/simple-ocr/assets/96189603/b751d57f-178b-4de2-b7e6-baf30e19bb78)
 
