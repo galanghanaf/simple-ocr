@@ -4,40 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple OCR</title>
+    <title>Webcam Capture</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.0/tesseract.min.js"></script>
 </head>
 
 <body>
+
     <center>
-        <h1>Simple OCR</h1>
+        <h1>Webcam Capture (OCR)</h1>
 
-        <textarea id="image-text"></textarea>
+        <input id="image-text">
         <textarea hidden id="image-url"></textarea>
+        <input id="total-string-ocr">
+
         <br>
         <br>
+
         <button id="captureButton">Capture Photo</button>
+        <button hidden id="reloadCaptureButton">Take Ulang</button>
+
+        <br>
         <br>
 
-        <table>
-            <tr>
-                <th>
-                    <video id="videoElement" autoplay></video>
-                </th>
-                <th>
-                    <canvas id="canvasElement" style="display: none;"></canvas>
-                    <img id="photoElement" style="display: none;">
-
-                </th>
-            </tr>
-        </table>
+        <video id="videoElement" autoplay></video>
+        <canvas id="canvasElement"></canvas>
+        <img id="photoElement">
     </center>
 
 
-    <!-- JavaScript code will go here -->
-
     <script>
+        $('#canvasElement').hide();
+        $('#photoElement').hide();
         const videoElement = document.getElementById('videoElement');
         const canvasElement = document.getElementById('canvasElement');
         const photoElement = document.getElementById('photoElement');
@@ -77,9 +75,11 @@
             canvasElement.getContext('2d').drawImage(videoElement, 0, 0);
             const photoDataUrl = canvasElement.toDataURL('image/jpeg');
             photoElement.src = photoDataUrl;
-            photoElement.style.display = 'block';
+            $('#photoElement').show();
             $('#image-url').val(photoElement.src);
-
+            $('#reloadCaptureButton').show();
+            $('#captureButton').hide();
+            $('#videoElement').hide();
 
         }
 
@@ -102,7 +102,12 @@
                         text
                     }
                 } = await worker.recognize($('#image-url').val());
-                $('#image-text').val(text)
+                $('#image-text').val(text.replace('§', "S").replace('$', "S"));
+
+                var total_string_ocr = $('#image-text').val().length;
+                $('#total-string-ocr').val(total_string_ocr);
+
+
                 // console.log(text);
                 await worker.terminate();
             })();
